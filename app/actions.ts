@@ -2,9 +2,16 @@
 
 import { Config, configSchema, explanationsSchema, Result } from "@/lib/types";
 import { openai } from "@ai-sdk/openai";
-import { sql } from "@vercel/postgres";
+import { sql } from "drizzle-orm";
 import { generateObject } from "ai";
 import { z } from "zod";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
+
+  const pool = new Pool({
+    connectionString: process.env.POSTGRES_URL,
+  });
+  const db = drizzle(pool);
 
 export const generateQuery = async (input: string) => {
   "use server";
@@ -84,7 +91,7 @@ export const runGenerateSQLQuery = async (query: string) => {
 
   let data: any;
   try {
-    data = await sql.query(query);
+    data = await db.execute(query);
   } catch (e: any) {
     if (e.message.includes('relation "unicorns" does not exist')) {
       console.log(
